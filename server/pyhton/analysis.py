@@ -2,7 +2,7 @@ import sys
 import json
 import cv2
 import numpy as np
-from fer import FER
+from fer import FER # type: ignore
 
 def analyze_emotion(image_path):
     """
