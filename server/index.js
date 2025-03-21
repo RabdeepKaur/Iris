@@ -2,6 +2,8 @@ const { Server}=require ("socket.io")
 const {spawn}=require('child_process');
 const fs= require('fs');
 const path=require('path')
+const express= require("express")
+const app= express();
 
 const io= new Server(8000,{
     cors: {
@@ -10,6 +12,28 @@ const io= new Server(8000,{
         credentials: true
       }
 });
+//
+app.get("./analysis.py", (req, res) => {
+  const pythonProcess = spawn('python3', ['analysis.py']);
+
+  let pythonOutput="";
+
+  pythonProcess.stdout.on('data',(data)=>{
+    pythonOutput+=data.toString();
+  })
+  pythonProcess.stderr.on('data',(data)=>{
+    console.erroe(`python Erroe :${data.toString()}`)
+  });
+  pythonProcess.on('close',(code)=>{
+    if(code!==0){
+      return res.status(500).send({error:'Python script falied'})
+    }
+    res.send({result:pythonOutput});
+  })
+
+});
+
+
 //mapping email connecio
 const emailToSocketIdMap = new Map();
 const socketidToEmailMap = new Map();
@@ -53,8 +77,12 @@ io.on("connection", (socket) => {
         const pythonProcess=spawn('python',['analysis.py',tempImagePath]);
         let pythonData="";
         pythonProcess.stdout.on('data',(data)=>{
-        console.error(`python error:${data.toString()}`)
+        pythonData += data.toString();
         });
+
+        pythonProcess.stderr.on('data',(data)=>{
+          console.erroe(`pyhton Erroe:${data.toString()}`)
+        })
 
         pythonProcess.on('close',(code)=>{
           if(fs.existsSync(tempImagePath)){

@@ -1,6 +1,7 @@
 import React ,{useState,useCallback,useEffect,useRef} from "react"
 import{useNavigate} from 'react-router-dom'
 import { useSocket } from "../context/SocketProvder"
+import "./lobby.css"
 import gsap from 'gsap';
 import {useGSAP} from "@gsap/react";
 
@@ -41,30 +42,38 @@ const LobbyScreen = () => {
     
   
     return (
-      <div>
-        <div  padding="4px" margin-left="20px"><h1>Lobby</h1></div>
+      < >
+      <div >
+        <div  className ="title" ><h1>Lobby</h1></div>
        
-        <form onSubmit={handleSubmitForm}>
+        <form  className="form" onSubmit={handleSubmitForm}>
+          <div className="input">
           <label htmlFor="email">Email ID</label>
-          <input
+          <br />
+          <input 
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
-        
-          <br />
+          /> 
+           <br />
+        </div>
+          
+
+          <div className="input">
           <label htmlFor="room">Room Number</label>
-          <input
+          <input 
             type="text"
             id="room"
             value={room}
             onChange={(e) => setRoom(e.target.value)}
           />
           <br />
-          <button>Join</button>
+          </div>
+          <button className="button">Join</button>
         </form>
       </div>
+      </>
     );
   };
   

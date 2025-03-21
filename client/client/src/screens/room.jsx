@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback, useState,useRef } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import ReactPlayer from "react-player";
 import peer from "../services/peer";
 import { useSocket } from "../context/SocketProvder"
@@ -10,11 +10,7 @@ const RoomPage = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState();
   const [remoteStream, setRemoteStream] = useState();
-const [emotion,setEmotion]=useState({dominant:"neutral",scores:{}});
-const [remoteEmotion,setRemoteEmotion]=useState();
 
-const emotionalInterval=useRef(null);
-const videoRef=useRef(null);
 
 
   const handleUserJoined = useCallback(({ email, id }) => {
@@ -32,51 +28,6 @@ const videoRef=useRef(null);
     setMyStream(stream);
   }, [remoteSocketId, socket]);
 
-
-  // emition analysis
-  const handleEmotionUpdate=useCallback(()=>{
-    if(!myStream || emotionalInterval.current) return;
-
-    const canvas=document.createElement('canvas');
-    const context=canvas.getContext('2d');
-    const videoElement=videoRef.current?.getIntervalplayer();
-
-    if(!videoElement){
-      console.error("video elemnt is not avaliable");
-      return;
-    }
-
-    emotionalInterval.current=setInterval(()=>{
-      canvas.width=videoElement.videoWidth;
-      canvas.height=videoElement.videoHeight;
-
-      context.drawImage(videoElement,0,0,canvas.width,canvas.height);
-
-      const imageData=canvas.toDataURL('image/jpeg',0.8);
-
-      socket.emit("analyze:emtoion",{image:imageData},(response)=>{
-        if(response.error){
-          console.erroe("erroe analysis emotion",response.error);
-          return;
-        }
-        setEmotion(response.emotion);
-
-        if(remoteSocketId){
-          socket.emot("emotion:update",{
-            to:remoteSocketId,
-            emotion:response.emotion
-          })
-        }
-      })
-    },1000)
-    return()=>{
-      if(emotionalInterval.current){
-        clearInterval(emotionalInterval.current);
-        emotionalInterval.current=null;
-      }
-    }
-  
-  },[myStream,remoteSocketId,Socket])
 
  
   const handleIncommingCall = useCallback(
@@ -147,7 +98,7 @@ const videoRef=useRef(null);
     socket.on("call:accepted", handleCallAccepted);
     socket.on("peer:nego:needed", handleNegoNeedIncomming);
     socket.on("peer:nego:final", handleNegoNeedFinal);
-    socket.on("emotion:update",handleEmotionUpdate);
+  
 
     return () => {
       socket.off("user:joined", handleUserJoined);
@@ -155,7 +106,7 @@ const videoRef=useRef(null);
       socket.off("call:accepted", handleCallAccepted);
       socket.off("peer:nego:needed", handleNegoNeedIncomming);
       socket.off("peer:nego:final", handleNegoNeedFinal);
-      socket.off("Emotion:update",handleEmotionUpdate);
+  
     };
   }, [
     socket,
@@ -164,30 +115,9 @@ const videoRef=useRef(null);
     handleCallAccepted,
     handleNegoNeedIncomming,
     handleNegoNeedFinal,
-    handleEmotionUpdate,
+   
   ]);
 
-  const renderEmotionalIndicator=(emotionData)=>{
-    const{dominat}=emotionData || { dominant: "neutral"}
-  
-
-  const emotionCOlors={
-    happy:"bg-green-500",
-    sad:"bg-blue-500",
-    angry:"bg-red-500",
-    surprised: "bg-yellow-500",
-    disgusted: "bg-purple-500",
-    fearful: "bg-orange-500",
-    neutral: "bg-gray-500",
-    no_face: "bg-gray-300"
-  }
- return (
-  <div className="flex items-center space-x-2">
-    <div className={`W-4 h-4 reounded-full ${emotionCOlors[dominat] || "bg-gray-500"} `}></div>
-<span className="caitalize">{dominat}</span>
-  </div>
- )
-  };
   return (
     <div>
       <h1>Room Page</h1>
@@ -200,13 +130,11 @@ const videoRef=useRef(null);
           <ReactPlayer
             playing
             muted
-            height="100px"
-            width="200px"
+            height="100%"
+            width="100%"
             url={myStream}
           />
-          <div className="absolute bottom-0 left-0 p-1 bg-black bg-opacity-50 text-white text-xs">
-              {renderEmotionalIndicator(emotion)}
-            </div>
+         
           
         </>
         
@@ -217,13 +145,11 @@ const videoRef=useRef(null);
           <ReactPlayer
             playing
             muted
-            height="100px"
-            width="200px"
+            height="50%"
+            width="50%"
             url={remoteStream}
           />
-          <div className="absolute bottom-0 left-0 p-1 bg-black bg-opacity-50 text-white text-xs">
-              {renderEmotionalIndicator(remoteEmotion)}
-            </div>
+         
         </>
       )}
     </div>
