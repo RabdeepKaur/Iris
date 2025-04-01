@@ -1,9 +1,8 @@
 import React ,{useState,useCallback,useEffect,useRef} from "react"
 import{useNavigate} from 'react-router-dom'
 import { useSocket } from "../context/SocketProvder"
-import "./lobby.css"
-import gsap from 'gsap';
-import {useGSAP} from "@gsap/react";
+import "./ui/lobby.css";
+
 
 
 
