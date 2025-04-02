@@ -1,5 +1,10 @@
 .body{
     background-color: #B8FF9F;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Montserrat", sans-serif; 
 }
 .form {
     --input-focus: #2d8cf0;
