@@ -1,12 +1,12 @@
 import React from 'react';
 import "./ui/home.css";
-import Navbar from '../components/Navbar';
+
 
 const Homepage= ()=>{
     return(
         <>
         <div>
-        <Navbar/>
+       home screen 
         </div>
         </>
     )
