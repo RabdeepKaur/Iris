@@ -1,21 +1,20 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
-  </head>
-  <body>
-    <p> hi</p>
-    <a-scene mindar-face embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-	<a-asset-item id="glassesModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/face-tracking/assets/glasses/scene.gltf"></a-asset-item>
-      </a-assets>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iris - Raw P2P Video Calls</title>
+    <meta name="description" content="Direct peer-to-peer video calls. No signup, no tracking, no BS. Just pure connection." />
+    <meta name="author" content="Iris" />
 
-      <a-camera active="false" position="0 0 0"></a-camera>
-      <a-entity mindar-face-target="anchorIndex: 168">
-	<a-gltf-model rotation="0 0 0" position="0 0 0" scale="0.01 0.01 0.01" src="#glassesModel"></a-gltf-model>
-      </a-entity>
-    </a-scene>
+    <meta property="og:title" content="Iris- Raw P2P Video Calls" />
+    <meta property="og:description" content="Direct peer-to-peer video calls. No signup, no tracking, no BS." />
+    <meta property="og:type" content="website" />
+  
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
