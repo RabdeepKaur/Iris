@@ -66,46 +66,6 @@ io.on("connection", (socket) => {
   //  console.log("peer:nego:done", ans);
     io.to(to).emit("peer:nego:final", { from: socket.id, ans });
 
-    socket.on('analyze:emtoion',async(data,callback)=>{
-      try{
-        const  imageData=data.image;
-        const base64Data=imageData.replace(/^data:image\/jpeg;base64,/, '')
-
-        const tempImagePath=path.join(_drename,`temp_image_${socket.id}.jpg`)
-        fs.writeFileSync(tempImagePath,base64Data,'base64');
-
-        const pythonProcess=spawn('python',['analysis.py',tempImagePath]);
-        let pythonData="";
-        pythonProcess.stdout.on('data',(data)=>{
-        pythonData += data.toString();
-        });
-
-        pythonProcess.stderr.on('data',(data)=>{
-          console.erroe(`pyhton Erroe:${data.toString()}`)
-        })
-
-        pythonProcess.on('close',(code)=>{
-          if(fs.existsSync(tempImagePath)){
-            fs.unlinkSync(tempImagePath);
-          }
-          if(code!==0){
-            return callback({error:'emotion analysis faild'});
-          }
-          try{
-            const emotonResults=JSON.parse(pythonData);
-            callback({emotion:emotonResults});
-          }
-          catch(error){
-            callback({erroe:'failed to parse emotion data'})
-          }
-        })
-       } catch(error){
-        console.erroe('error in emtion ',error);
-        callback({error:'server error'});
-       }
-    });
-    socket.on('emotion:update',({to,emotion})=>{
-      socket.to(to).emit("emotion:update",{from:socket.id,emotion});
-    })
+  
   });
 });

@@ -28,8 +28,6 @@
   }
   .title {
     color: var(--font-color);
-    font-weight: 900;
-    font-size: 20px;
     margin-bottom: 25px;
    margin-left:140px;
   }

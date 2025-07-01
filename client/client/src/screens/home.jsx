@@ -31,6 +31,7 @@ const Homepage= ()=>{
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <a href="/lobby">
               <button 
                 size="lg" 
                 className="bg-red-500 hover:bg-red-600 text-white font-black text-xl px-12 py-6 border-4 border-black transform hover:scale-105 transition-all duration-200 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
@@ -38,7 +39,7 @@ const Homepage= ()=>{
                 <Play className="mr-3 h-6 w-6" />
                 START CALLING
               </button>
-              
+              </a>
               <div className="text-sm text-stone-600 bg-amber-100 px-6 py-3 border-2 border-stone-400 font-mono">
                 ★ NO SIGNUP REQUIRED ★
               </div>
@@ -47,6 +48,12 @@ const Homepage= ()=>{
         </div>
 
         {/* Pixel art decorative elements */}
+        <div className="absolute top-10 left-10 w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 transform rotate-45" style={{
+          clipPath: 'polygon(0 0, 100% 0, 100% 60%, 75% 100%, 0 100%)'
+        }}></div>
+        <div className="absolute bottom-10 right-10 w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500" style={{
+          clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)'
+        }}></div>
         <div className="absolute top-10 left-10 w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 transform rotate-45" style={{
           clipPath: 'polygon(0 0, 100% 0, 100% 75%, 75% 100%, 0 100%)'
         }}></div>
@@ -160,7 +167,7 @@ const Homepage= ()=>{
               No setup. No signup. No surrender of your data.
             </p>
           </div>
-
+<a href="/lobby">
           <button 
             size="lg" 
             className="bg-red-500 hover:bg-red-600 text-white font-black text-2xl px-16 py-8 border-4 border-white transform hover:scale-105 transition-all duration-200 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
@@ -168,7 +175,7 @@ const Homepage= ()=>{
             <Video className="mr-4 h-8 w-8" />
             START YOUR FIRST CALL
           </button>
-
+</a>
           <div className="mt-12 flex justify-center space-x-8 text-stone-400">
             <div className="flex items-center space-x-2">
               <Star className="h-5 w-5" />
