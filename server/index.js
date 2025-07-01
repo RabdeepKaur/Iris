@@ -12,26 +12,6 @@ const io= new Server(8000,{
         credentials: true
       }
 });
-//
-app.get("./analysis.py", (req, res) => {
-  const pythonProcess = spawn('python3', ['analysis.py']);
-
-  let pythonOutput="";
-
-  pythonProcess.stdout.on('data',(data)=>{
-    pythonOutput+=data.toString();
-  })
-  pythonProcess.stderr.on('data',(data)=>{
-    console.erroe(`python Erroe :${data.toString()}`)
-  });
-  pythonProcess.on('close',(code)=>{
-    if(code!==0){
-      return res.status(500).send({error:'Python script falied'})
-    }
-    res.send({result:pythonOutput});
-  })
-
-});
 
 
 //mapping email connecio
