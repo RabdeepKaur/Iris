@@ -5,7 +5,14 @@ module.exports = {
       "./index.html",
     ],
     theme: {
-      extend: {},
+      extend: {
+         colors: {
+           border: 'hsl(var(--border))', 
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        // You can also add other variables like card, primary, etc.
+      },
+      },
     },
     plugins: [],
   }
