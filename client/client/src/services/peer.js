@@ -36,4 +36,6 @@ class Peerservces{
     }
 }
 
-export default new Peerservces();
+const peerServicesInstance = new Peerservces();
+export default peerServicesInstance;
+// Updated peer service to recreate connection for each call

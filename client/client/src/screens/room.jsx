@@ -1,3 +1,4 @@
+
 import React, { useEffect, useCallback, useState } from "react";
 import ReactPlayer from "react-player";
 import peer from "../services/peer";
@@ -13,7 +14,7 @@ import {
   MoreVertical,
   Users,
   MessageSquare,
-  Monitor
+  
 } from 'lucide-react';
 
 const RoomPage = () => {
@@ -21,60 +22,137 @@ const RoomPage = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState();
   const [remoteStream, setRemoteStream] = useState();
+  const [isCallActive, setIsCallActive] = useState(false);
   
   // UI state
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [showControls, setShowControls] = useState(true);
+ 
 
   const handleUserJoined = useCallback(({ email, id }) => {
     console.log(`Email ${email} joined room`);
     setRemoteSocketId(id);
   }, []);
 
-  const handleCallUser = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    const offer = await peer.getOffer();
-    socket.emit("user:call", { to: remoteSocketId, offer });
-    setMyStream(stream);
-  }, [remoteSocketId, socket]);
-
-  const handleIncommingCall = useCallback(
-    async ({ from, offer }) => {
-      setRemoteSocketId(from);
+  const initializeCamera = useCallback(async () => {
+    try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
       setMyStream(stream);
-      console.log(`Incoming Call`, from, offer);
-      const ans = await peer.getAnswer(offer);
-      socket.emit("call:accepted", { to: from, ans });
+     
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+    }
+  }, []);
+
+  // Initialize camera on component mount
+  useEffect(() => {
+    initializeCamera();
+    
+  // No need to add tracks here; tracks are managed during call setup.
+  }, [initializeCamera, myStream]);
+  const handleCallUser = useCallback(async () => {
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
+      
+      setMyStream(stream);
+      
+      // Clear existing tracks first to avoid m-line order issues
+      const senders = peer.peer.getSenders();
+      for (const sender of senders) {
+        if (sender.track) {
+          peer.peer.removeTrack(sender);
+        }
+      }
+      
+      // Add tracks to peer connection in consistent order (audio first, then video)
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+     if (audioTrack) peer.peer.addTrack(audioTrack, stream);
+if (videoTrack) peer.peer.addTrack(videoTrack, stream);
+
+      
+      // Get offer and send it to remote user
+      const offer = await peer.getOffer();
+      socket.emit("user:call", { to: remoteSocketId, offer });
+      
+      setIsCallActive(true);
+      console.log("Call initiated");
+    } catch (error) {
+      console.error("Error starting call:", error);
+    }
+  }, [remoteSocketId, socket]);
+
+  const handleIncommingCall = useCallback(
+    async ({ from, offer }) => {
+      try {
+        setRemoteSocketId(from);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true,
+        });
+        setMyStream(stream);
+        console.log(`Incoming Call`, from, offer);
+        
+        // Clear existing tracks first to avoid m-line order issues
+        const senders = peer.peer.getSenders();
+        for (const sender of senders) {
+          if (sender.track) {
+            peer.peer.removeTrack(sender);
+          }
+        }
+      
+        // Add tracks to peer connection in consistent order (audio first, then video)
+        const audioTrack = stream.getAudioTracks()[0];
+        const videoTrack = stream.getVideoTracks()[0];
+        
+        if (audioTrack) {
+          peer.peer.addTrack(audioTrack, stream);
+        }
+        if (videoTrack) {
+          peer.peer.addTrack(videoTrack, stream);
+        }
+        
+        const ans = await peer.getAnswer(offer);
+        socket.emit("call:accepted", { to: from, ans });
+        
+        setIsCallActive(true);
+        console.log("Call accepted and answered");
+      } catch (error) {
+        console.error("Error handling incoming call:", error);
+      }
     },
     [socket]
   );
-
-  const sendStreams = useCallback(() => {
-    for (const track of myStream.getTracks()) {
-      peer.peer.addTrack(track, myStream);
-    }
-  }, [myStream]);
+  
 
   const handleCallAccepted = useCallback(
-    ({ from, ans }) => {
-      peer.setLocalDescription(ans);
-      console.log("Call Accepted!");
-      sendStreams();
+    async ({ from, ans }) => {
+      try {
+        await peer.setLocalDescription(ans);
+        console.log("Call Accepted!");
+        setIsCallActive(true);
+      } catch (error) {
+        console.error("Error handling call acceptance:", error);
+      }
     },
-    [sendStreams]
+    []
   );
 
   const handleNegoNeeded = useCallback(async () => {
-    const offer = await peer.getOffer();
-    socket.emit("peer:nego:needed", { offer, to: remoteSocketId });
+    try {
+      console.log("Negotiation needed");
+      const offer = await peer.getOffer();
+      socket.emit("peer:nego:needed", { offer, to: remoteSocketId });
+    } catch (error) {
+      console.error("Error in negotiation:", error);
+    }
   }, [remoteSocketId, socket]);
 
   useEffect(() => {
@@ -86,14 +164,24 @@ const RoomPage = () => {
 
   const handleNegoNeedIncomming = useCallback(
     async ({ from, offer }) => {
-      const ans = await peer.getAnswer(offer);
-      socket.emit("peer:nego:done", { to: from, ans });
+      try {
+        console.log("Handling incoming negotiation");
+        const ans = await peer.getAnswer(offer);
+        socket.emit("peer:nego:done", { to: from, ans });
+      } catch (error) {
+        console.error("Error in incoming negotiation:", error);
+      }
     },
     [socket]
   );
 
   const handleNegoNeedFinal = useCallback(async ({ ans }) => {
-    await peer.setLocalDescription(ans);
+    try {
+      console.log("Final negotiation step");
+      await peer.setLocalDescription(ans);
+    } catch (error) {
+      console.error("Error in final negotiation:", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -149,20 +237,83 @@ const RoomPage = () => {
   }, [myStream]);
 
   const endCall = useCallback(() => {
-    if (myStream) {
-      myStream.getTracks().forEach(track => track.stop());
-      setMyStream(null);
+    try {
+      // Stop all tracks
+      if (myStream) {
+        myStream.getTracks().forEach(track => {
+          track.stop();
+        });
+        setMyStream(null);
+      }
+      
+      // Clear remote stream
+      if (remoteStream) {
+        setRemoteStream(null);
+      }
+      
+      // Remove all senders from peer connection
+      const senders = peer.peer.getSenders();
+      for (const sender of senders) {
+        if (sender.track) {
+          peer.peer.removeTrack(sender);
+        }
+      }
+      
+      // Reset states
+      setRemoteSocketId(null);
+      setIsCallActive(false);
+      setIsMuted(false);
+      setIsVideoOff(false);
+      
+      // Close and recreate peer connection to avoid state issues
+      peer.peer.close();
+      
+      // Notify the other user that call ended
+      if (remoteSocketId) {
+        socket.emit("call:ended", { to: remoteSocketId });
+      }
+      
+      console.log("Call ended and cleaned up");
+    } catch (error) {
+      console.error("Error ending call:", error);
     }
-    if (remoteStream) {
-      setRemoteStream(null);
-    }
-    setRemoteSocketId(null);
-    peer.peer.close();
-  }, [myStream, remoteStream]);
+  }, [myStream, remoteStream, remoteSocketId, socket]);
+
+  // Handle when remote user ends call
+  useEffect(() => {
+    const handleCallEnded = () => {
+      try {
+        if (myStream) {
+          myStream.getTracks().forEach(track => track.stop());
+          setMyStream(null);
+        }
+        setRemoteStream(null);
+        setIsCallActive(false);
+        setIsMuted(false);
+        setIsVideoOff(false);
+        
+        // Clean up peer connection
+        const senders = peer.peer.getSenders();
+        for (const sender of senders) {
+          if (sender.track) {
+            peer.peer.removeTrack(sender);
+          }
+        }
+        
+        console.log("Remote call ended - cleaned up");
+      } catch (error) {
+        console.error("Error handling remote call end:", error);
+      }
+    };
+
+    socket.on("call:ended", handleCallEnded);
+    return () => socket.off("call:ended", handleCallEnded);
+  }, [socket, myStream,remoteStream]);
+
 
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col relative overflow-hidden">
-      {/* Header */}
+     
       <div className="flex items-center justify-between p-4 bg-gray-800/50 backdrop-blur-sm z-10">
         <div className="flex items-center space-x-3">
           <div className={`w-3 h-3 rounded-full ${remoteSocketId ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
@@ -184,10 +335,10 @@ const RoomPage = () => {
         </div>
       </div>
 
-      {/* Main Video Area */}
+     Main Video Area 
       <div className="flex-1 relative">
-        {remoteStream ? (
-          /* Remote participant view - main video */
+       {remoteStream ? (
+          
           <div className="w-full h-full relative">
             <ReactPlayer
               url={remoteStream}
@@ -198,12 +349,11 @@ const RoomPage = () => {
               style={{ objectFit: 'cover' }}
             />
             
-            {/* Remote participant info overlay */}
+            
             <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-lg">
               <span className="text-sm font-medium">Remote Participant</span>
             </div>
 
-            {/* Self view - picture in picture */}
             <div className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-xl overflow-hidden shadow-2xl border-2 border-gray-600">
               {myStream ? (
                 <ReactPlayer
@@ -237,7 +387,7 @@ const RoomPage = () => {
             </div>
           </div>
         ) : myStream ? (
-          /* Self view only - waiting for call */
+       
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
             <div className="text-center max-w-md">
               <div className="w-64 h-48 bg-gray-800 rounded-xl overflow-hidden shadow-2xl mb-6 mx-auto relative">
@@ -267,16 +417,9 @@ const RoomPage = () => {
                   : "Waiting for others to join the room..."
                 }
               </p>
-              
-              {/* Action buttons */}
+             
               <div className="flex space-x-4 justify-center">
-                <button
-                  onClick={sendStreams}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition-colors flex items-center space-x-2"
-                >
-                  <Monitor size={20} />
-                  <span>Send Stream</span>
-                </button>
+                
                 
                 {remoteSocketId && (
                   <button
@@ -291,7 +434,7 @@ const RoomPage = () => {
             </div>
           </div>
         ) : (
-          /* No stream - setup view */
+          
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
             <div className="text-center max-w-md">
               <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -319,10 +462,10 @@ const RoomPage = () => {
         )}
       </div>
 
-      {/* Bottom Controls */}
+    
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
         <div className="flex items-center justify-center space-x-4">
-          {/* Microphone toggle */}
+         
           <button
             onClick={toggleMute}
             disabled={!myStream}
@@ -335,7 +478,7 @@ const RoomPage = () => {
             {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
           </button>
 
-          {/* Video toggle */}
+           
           <button
             onClick={toggleVideo}
             disabled={!myStream}
@@ -348,7 +491,7 @@ const RoomPage = () => {
             {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
           </button>
 
-          {/* End call */}
+          
           <button 
             onClick={endCall}
             disabled={!myStream && !remoteStream}
@@ -359,13 +502,13 @@ const RoomPage = () => {
             <PhoneOff size={24} />
           </button>
 
-          {/* Settings */}
+          
           <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full transition-all duration-200">
             <Settings size={24} />
           </button>
         </div>
 
-        {/* Connection status */}
+    
         <div className="text-center mt-4">
           <div className="inline-flex items-center space-x-2 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
             <div className={`w-2 h-2 rounded-full ${remoteSocketId ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
@@ -376,7 +519,9 @@ const RoomPage = () => {
         </div>
       </div>
     </div>
-  );
+  )
+
+
 };
 
 export default RoomPage;
