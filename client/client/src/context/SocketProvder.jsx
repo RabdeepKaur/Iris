@@ -7,7 +7,7 @@ export const useSocket=()=>{
     const socket=useContext(SocketContext);
     return socket
 }
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL ||"https://iris-rust-eta.vercel.app/", {
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL ||"iris-dxiwo4ob6-rabdeep-kaurs-projects.vercel.app", {
     withCredentials: true ,
      transports: ['websocket', 'polling'] // If you're using credentials
   });
@@ -15,7 +15,7 @@ const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL ||"https://iris-rust-eta.ve
 // hre value is the actual socket 
 export const SocketProvder=(props)=>{
 
-const socket=useMemo(()=>io(process.env.NEXT_PUBLIC_SOCKET_URL ||'https://iris-rust-eta.vercel.app/'),{
+const socket=useMemo(()=>io(process.env.NEXT_PUBLIC_SOCKET_URL ||'iris-dxiwo4ob6-rabdeep-kaurs-projects.vercel.app'),{
      withCredentials: true,
             transports: ['websocket', 'polling']
 },
