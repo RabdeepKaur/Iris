@@ -3,14 +3,22 @@ const {spawn}=require('child_process');
 const fs= require('fs');
 const path=require('path')
 const express= require("express")
-const app= express();
+const { createServer } = require('http');
 
-const io= new Server(8000,{
+const app= express();
+const server=createServer(app);
+
+const PORT = process.env.PORT || 8000;
+
+const io= new Server(server,{
     cors: {
-        origin: "http://localhost:3000", // Your frontend URL
+        origin: "*", // Your frontend URL
         methods: ["GET", "POST"],
         credentials: true
       }
+});
+app.get('/', (req, res) => {
+    res.send('Server is running!');
 });
 
 
@@ -49,3 +57,7 @@ io.on("connection", (socket) => {
   
   });
 });
+server.listen(PORT, () => {
+  console.log("Server is running on port 3000");
+});
+module.exports=app;
