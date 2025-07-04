@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 8000;
 
 const io= new Server(server,{
     cors: {
-        origin: "https://iris-client.vercel.app/", // Your frontend URL
+        origin: "*", // Your frontend URL
         methods: ["GET", "POST"],
         credentials: true
       }
@@ -58,6 +58,13 @@ io.on("connection", (socket) => {
   });
 });
 server.listen(PORT, () => {
-  console.log("Server is running on port 3000");
+    console.log(`Server running on port ${PORT}`);
 });
+
+// For Vercel deployment
+if (process.env.NODE_ENV !== 'production') {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 module.exports=app;
