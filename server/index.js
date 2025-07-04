@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 8000;
 
 const io= new Server(server,{
     cors: {
-        origin: "*", // Your frontend URL
+        origin: "https://iris-client.vercel.app/", // Your frontend URL
         methods: ["GET", "POST"],
         credentials: true
       }
