@@ -12,7 +12,10 @@ const PORT = process.env.PORT || 8000;
 
 const io= new Server(server,{
     cors: {
-        origin: "iris-client-l7lhpf56n-rabdeep-kaurs-projects.vercel.app", // Your frontend URL
+      origin: [
+      "https://iris-client.vercel.app",
+      "http://localhost:3000",  // For local development
+    ], // Your frontend URL
         methods: ["GET", "POST"],
         credentials: true
       }
