@@ -26,7 +26,7 @@ A modern peer-to-peer (P2P) video calling application built with a focus on spee
 ```bash
 # Clone the repo
 git clone https://github.com/
-cd peerconnect
+cd Iris
 
 # Install dependencies
 npm install
